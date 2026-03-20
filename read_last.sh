@@ -1,26 +1,23 @@
 #!/bin/bash
-# Claude Speak — Read last Claude response aloud using Piper
-# Called by the /read command in Claude Code
+# Reads the last saved Claude response aloud using Kokoro TTS (voice: af_aoede)
 
-PIPER="$HOME/.claude/piper-venv/bin/python3"
-MODEL="$HOME/.claude/piper-voices/en_US-lessac-high.onnx"
+KOKORO="$HOME/.claude/kokoro-venv/bin/kokoro-tts"
+MODEL="$HOME/.claude/kokoro-models/kokoro-v1.0.onnx"
+VOICES="$HOME/.claude/kokoro-models/voices-v1.0.bin"
 LAST_RESPONSE="$HOME/.claude/last_response.txt"
 TMP_WAV="/tmp/claude_read_$$.wav"
+TMP_TXT="/tmp/claude_read_$$.txt"
 
 if [ ! -f "$LAST_RESPONSE" ]; then
   echo "No response saved yet."
   exit 1
 fi
 
-TEXT=$(cat "$LAST_RESPONSE")
+cp "$LAST_RESPONSE" "$TMP_TXT"
 
-if [ -z "$TEXT" ]; then
-  echo "Last response is empty."
-  exit 1
-fi
-
-echo "$TEXT" | "$PIPER" -m piper \
+"$KOKORO" "$TMP_TXT" "$TMP_WAV" \
+  --voice af_aoede \
   --model "$MODEL" \
-  --output_file "$TMP_WAV" 2>/dev/null && afplay "$TMP_WAV"
+  --voices "$VOICES" 2>/dev/null && afplay "$TMP_WAV"
 
-rm -f "$TMP_WAV"
+rm -f "$TMP_WAV" "$TMP_TXT"
