@@ -1,0 +1,19 @@
+#!/bin/bash
+# speak — reads the last Claude response aloud using Piper TTS
+# Install: cp speak-cli ~/.local/bin/speak && chmod +x ~/.local/bin/speak
+
+PIPER="$HOME/.claude/piper-venv/bin/python3"
+MODEL="$HOME/.claude/piper-voices/en_US-lessac-high.onnx"
+LAST_RESPONSE="$HOME/.claude/last_response.txt"
+TMP_WAV="/tmp/claude_speak_$$.wav"
+
+if [ ! -f "$LAST_RESPONSE" ] || [ ! -s "$LAST_RESPONSE" ]; then
+  echo "Nothing to speak yet — chat with Claude first."
+  exit 1
+fi
+
+echo "$(<"$LAST_RESPONSE")" | "$PIPER" -m piper \
+  --model "$MODEL" \
+  --output_file "$TMP_WAV" 2>/dev/null && afplay "$TMP_WAV"
+
+rm -f "$TMP_WAV"
